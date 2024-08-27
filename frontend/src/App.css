@@ -1,0 +1,13 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.bg-custom-radial {
+  /* Your existing radial background styles */
+  background: radial-gradient(rgba(255, 255, 255, 0.568), orange, red); /* Example gradient */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+

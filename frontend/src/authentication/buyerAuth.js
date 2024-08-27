@@ -1,0 +1,383 @@
+// authentication/buyerAuth.js
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import Logo from '../assets/Good Food.png';
+import { useUser } from '../context/userContext';
+
+const Auth = () => {
+  const [isLoginPage, setIsLoginPage] = useState(true);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); 
+  const navigate = useNavigate();
+  const [userId, setUserId] = useState(null);
+  const [verificationStep, setVerificationStep] = useState(false);
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { setUser } = useUser(); 
+  const [address, setAddress] = useState({
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: ''
+  });
+
+  useEffect(() => { 
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('userInfo');
+    const checkToken = async () => {
+      if (token && storedUser) {
+        try {
+          const config = {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          };
+          const { data } = await axios.get('http://localhost:5000/api/buyerAuth/profile', config,  {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setUser(data.user);
+          navigate('/');
+        } catch (error) {
+          console.error('Token verification error:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('userInfo');
+        }
+      }
+    };
+    checkToken();
+  }, [navigate, setUser]);
+
+  const displayMessage = (msg, type) => {
+    setMessage(msg);
+    setMessageType(type);
+    setTimeout(() => {
+      setMessage('');
+      setMessageType('');
+    }, 5000);
+  };
+
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    setAddress((prevAddress) => ({
+      ...prevAddress,
+      [name]: value
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    setProfilePicture(e.target.files[0]); 
+  };
+
+  const handleRegister = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+  
+    if (!name || !email || !contactNumber || !address || !password || !confirmPassword) {
+      alert("Please fill all the fields");
+      setLoading(false);
+      return;
+    }
+  
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+  
+    try {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('contactNumber', contactNumber);
+      formData.append('address', JSON.stringify(address)); 
+      formData.append('password', password);
+      formData.append('profilePicture', profilePicture); 
+  
+      const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      };
+  
+      const { data } = await axios.post("http://localhost:5000/api/buyerAuth/register", formData, config);
+  
+      if (data && data.user && data.user._id) {
+        setUserId(data.user._id);
+        setVerificationStep(true); // Show the verification input
+      } else {
+        alert("Registration failed. Please try again.");
+      }
+  
+      setLoading(false);
+  
+    } catch (error) {
+      alert(error.response?.data?.message || error.message);
+      setLoading(false);
+    }
+  };
+  
+  const handleVerifyCode = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+
+    try {
+      const verificationResponse = await axios.post("http://localhost:5000/api/buyerAuth/verify-email", {
+        userId,
+        code
+      });
+
+      if (verificationResponse.data.message) {
+        alert(verificationResponse.data.message);
+        localStorage.setItem("userInfo", JSON.stringify(verificationResponse.data.user));
+        navigate("/");
+      } else {
+        alert("Verification failed. Please check the code and try again.");
+      }
+
+      setLoading(false);
+    } catch (error) {
+      alert(error.response?.data?.message || error.message);
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+
+    if (!email || !password) {
+        displayMessage("Please fill all the fields", 'warning');
+        setLoading(false);
+        return;
+    }
+
+    try {
+        const config = {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        };
+
+        const normalizedEmail = email.toLowerCase(); 
+
+        const { data } = await axios.post("http://localhost:5000/api/buyerAuth/login", { email: normalizedEmail, password }, config);      
+
+        alert('Login successful!');
+
+        const userInfo = {
+            ...data.user,
+            role: "buyer",
+        };
+
+        setUser(userInfo); 
+
+        localStorage.setItem("userInfo", JSON.stringify(userInfo)); 
+        localStorage.setItem("token", data.token); 
+
+        setLoading(false);
+
+        navigate("/");
+
+    } catch (error) {
+        console.error('Login error:', error.response?.data?.message || error.message);
+        displayMessage(error.response?.data?.message || error.message, 'error');
+        setLoading(false);
+    }
+  };
+
+  const toggleAuthPage = () => {
+    setIsLoginPage(!isLoginPage);
+    setMessage('');
+    setMessageType('');
+  };
+
+  return (
+    <div className='flex mb-10 flex-col justify-center items-center'>
+      <div className='bg-slate-400 w-[500px] rounded-b-lg mb-16 py-4 text-center justify-center items-center shadow-lg'>
+        <div className='text-3xl mt-5 font-bold'>Welcome {isLoginPage && 'Back'}</div>
+        <div className='text-lg font-bold mb-8'>{isLoginPage ? 'Login now to get explored' : 'Register now to get started'}</div>
+        {!verificationStep ? (
+          <form onSubmit={!isLoginPage ? handleRegister : handleLogin} className='flex flex-col'>
+              <>
+              {!isLoginPage && (
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder='Enter your name'
+                  className='mb-4 p-2 mx-4 rounded-lg'
+                />
+              )}
+
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder='Enter your email'
+                  className='mb-4 p-2 mx-4 rounded-lg'
+                />
+                {!isLoginPage && (
+                <input
+                  type="text"
+                  name="contactNumber"
+                  value={contactNumber}
+                  placeholder='Enter your contact number'
+                  onChange={(e) => setContactNumber(e.target.value)}
+                  className="mb-4 mx-4 p-2 rounded-lg "
+                  required
+                />
+                )}
+
+                {!isLoginPage && (
+                  <input
+                    type="text"
+                    name='street'
+                    value={address.street}
+                    onChange={handleAddressChange}
+                    required
+                    placeholder='Street'
+                    className='mb-4 mx-4 p-2 rounded-lg '
+                  />
+                )}
+                {!isLoginPage && (
+                  <input
+                    type="text"
+                    name='city'
+                    value={address.city}
+                    onChange={handleAddressChange}
+                    required
+                    placeholder='City'
+                    className='mb-4 mx-4 p-2 rounded-lg '
+                  />
+                )}
+                {!isLoginPage && (
+                  <input
+                    type="text"
+                    name='state'
+                    value={address.state}
+                    onChange={handleAddressChange}
+                    required
+                    placeholder='State'
+                    className='mb-4 mx-4 p-2 rounded-lg '
+                  />
+                )}
+                {!isLoginPage && (
+                  <input
+                    type="text"
+                    name='zip'
+                    value={address.zip}
+                    onChange={handleAddressChange}
+                    required
+                    placeholder='Zip Code'
+                    className='mb-4 p-2 rounded-lg mx-4'
+                  />
+                )}
+                {!isLoginPage && (
+                  <input
+                    type="text"
+                    name='country'
+                    value={address.country}
+                    onChange={handleAddressChange}
+                    required
+                    placeholder='Country'
+                    className='mb-4 p-2 rounded-lg mx-4'
+                  />
+                )}
+                <div className="relative mb-4 mx-4">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder='Enter your password'
+                    className='shadow-lg p-2 rounded-lg w-full'
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className='absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 p-1 rounded'>
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+                  {!isLoginPage && (
+                 <div className="relative mb-4 mx-4">
+                   <input
+                     type={showConfirmPassword ? "text" : "password"}
+                     value={confirmPassword}
+                     onChange={(e) => setConfirmPassword(e.target.value)}
+                     required
+                     placeholder="Confirm password"
+                     className="p-2 rounded-lg shadow-lg w-full"
+                   />
+                   <button
+                     type="button"
+                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                     className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-200 p-1 rounded"
+                   >
+                     {showConfirmPassword ? "Hide" : "Show"}
+                   </button>
+                 </div>
+                  )}
+
+                {!isLoginPage && (
+                  <input
+                    type="file"
+                    name="profilePicture"
+                    onChange={handleFileChange}
+                    placeholder='Upload profile picture'
+                    className="mb-2 p-2 rounded-lg bg-white mx-4"
+                 />
+                )}
+                <button type="submit" className='mb-4 mx-4 bg-yellow-400 text-slate-900 rounded-lg shadow-lg py-2 text-2xl font-bold'>
+                 {!isLoginPage ? 'Register now' : 'Login'}
+                </button>
+              </>
+          </form>
+        ) : (
+            <form onSubmit={handleVerifyCode}>
+              <p>Please check your email and enter 6 digits code</p>
+              <input
+                type="text"
+                placeholder="Enter Verification Code"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className='w-1/2 mx-2 p-2 rounded-lg my-3'
+                required
+              />
+              <button type="submit" disabled={loading} className='bg-yellow-400 hover:bg-yellow-500 text-slate-900 rounded-lg shadow-lg p-2 font-bold '>
+                {loading ? 'Verifying...' : 'Verify Code'}
+              </button>
+            </form>
+        )}
+        {message && <p className={`text-${messageType === 'success' ? 'green' : 'red'}-600 mb-2`}>{message}</p>}
+        <div>
+          {isLoginPage ? `Don't have an account? ` : `Already have an account? `}
+          <span className='text-blue-800 cursor-pointer underline' onClick={toggleAuthPage}>
+            {!isLoginPage ? 'Login' : 'Register now'}
+          </span>
+        </div>
+        
+        {isLoginPage && (
+          <div>
+            <img src={Logo} alt='logo' className='w-24 rounded-full mx-48 mt-4'/>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Auth;
