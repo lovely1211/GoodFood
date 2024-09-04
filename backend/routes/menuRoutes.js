@@ -1,12 +1,12 @@
 // routes/menuRoutes.js
 
+const mongoose = require('mongoose');
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const authMiddleware =require('../middleware/sellerMiddleware');
 const MenuItem = require('../models/menu');
 const LikedItem = require('../models/likedItem');
-const mongoose = require('mongoose');
 
 
 const storage = multer.diskStorage({
@@ -55,8 +55,9 @@ router.get('/seller/:sellerId', authMiddleware, async (req, res) => {
   if (req.params.sellerId !== req.user._id.toString()) {
     return res.status(403).json({ message: 'Access forbidden' });
   }
+  const { sellerId } = req.params;
   try {
-    const menuItems = await MenuItem.find({ sellerId: req.params.sellerId });
+    const menuItems = await MenuItem.find({ sellerId });
     res.status(200).json(menuItems);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -120,19 +121,16 @@ router.post('/likedItems', async (req, res) => {
     const { buyerId, productId, action } = req.body;
 
     if (action === 'like') {
-      // Check if the item is already liked
       const existingLikedItem = await LikedItem.findOne({ buyerId, productId });
       if (existingLikedItem) {
         return res.status(400).json({ message: 'Item is already liked' });
       }
 
-      // Fetch product details using the productId
       const product = await MenuItem.findById(productId);
       if (!product) {
         return res.status(404).json({ message: 'Product not found' });
       }
 
-      // Create a new liked item with all required fields
       const newLikedItem = new LikedItem({
         buyerId,
         productId,
@@ -142,21 +140,18 @@ router.post('/likedItems', async (req, res) => {
         image: product.image,
       });
 
-      // Save the liked item to the database
       await newLikedItem.save();
-
-      return res.status(201).json(newLikedItem);
+      res.status(201).json(newLikedItem);
     } else if (action === 'unlike') {
-      // Unlike the item: remove it from the liked items collection
       const deletedLikedItem = await LikedItem.findOneAndDelete({ buyerId, productId });
 
       if (!deletedLikedItem) {
         return res.status(404).json({ message: 'Liked item not found' });
       }
 
-      return res.status(200).json({ message: 'Item unliked successfully' });
+      res.status(200).json({ message: 'Item unliked successfully' });
     } else {
-      return res.status(400).json({ message: 'Invalid action' });
+      res.status(400).json({ message: 'Invalid action' });
     }
   } catch (error) {
     console.error('Error processing liked item:', error);
@@ -222,6 +217,18 @@ router.get('/:sellerId/category-counts', async (req, res) => {
   } catch (error) {
     console.error('Error fetching category counts:', error);
     res.status(500).json({ error: 'Failed to fetch category counts' });
+  }
+});
+
+// Get : Menu items by category for a buyer
+router.get('/:sellerId/category/:category/items', async (req, res) => {
+  const { sellerId, category } = req.params;
+
+  try {
+    const items = await MenuItem.find({ sellerId, category });
+    res.status(200).json(items);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch items' });
   }
 });
 

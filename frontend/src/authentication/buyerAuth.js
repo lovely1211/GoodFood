@@ -5,6 +5,24 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../assets/Good Food.png';
 import { useUser } from '../context/userContext';
+import ForgotPassword from './buyerForgot';
+
+const ForgotPasswordPopup = ({ onClose }) => {
+  return (
+    <div className="fixed inset-0 flex justify-center items-center z-50">
+      <div className="absolute inset-0 bg-gray-500 opacity-50" onClick={onClose}></div>
+      <div className="relative bg-white p-6 rounded-lg shadow-lg z-10">
+        <ForgotPassword />
+        <button
+          className="absolute top-2 right-2 text-xl font-bold"
+          onClick={onClose}
+        >
+          &times;
+        </button>
+      </div>
+    </div>
+  );
+}; 
 
 const Auth = () => {
   const [isLoginPage, setIsLoginPage] = useState(true);
@@ -22,6 +40,8 @@ const Auth = () => {
   const [userId, setUserId] = useState(null);
   const [verificationStep, setVerificationStep] = useState(false);
   const [code, setCode] = useState('');
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [isForgotPasswordPopupOpen, setIsForgotPasswordPopupOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { setUser } = useUser(); 
   const [address, setAddress] = useState({
@@ -184,9 +204,11 @@ const Auth = () => {
 
         localStorage.setItem("userInfo", JSON.stringify(userInfo)); 
         localStorage.setItem("token", data.token); 
+        // After successful login
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('role', 'buyer');
 
         setLoading(false);
-
         navigate("/");
 
     } catch (error) {
@@ -202,7 +224,19 @@ const Auth = () => {
     setMessageType('');
   };
 
+  const handleOpenForgotPassword = () => {
+    setIsForgotPasswordOpen(true);
+  };
+
+  const handleCloseForgotPassword = () => {
+    setIsForgotPasswordOpen(false);
+  };
+
   return (
+    <>
+    {isForgotPasswordPopupOpen && (
+      <ForgotPasswordPopup onClose={() => setIsForgotPasswordPopupOpen(false)} />
+    )}
     <div className='flex mb-10 flex-col justify-center items-center'>
       <div className='bg-slate-400 w-[500px] rounded-b-lg mb-16 py-4 text-center justify-center items-center shadow-lg'>
         <div className='text-3xl mt-5 font-bold'>Welcome {isLoginPage && 'Back'}</div>
@@ -341,9 +375,11 @@ const Auth = () => {
                     className="mb-2 p-2 rounded-lg bg-white mx-4"
                  />
                 )}
-                <button type="submit" className='mb-4 mx-4 bg-yellow-400 text-slate-900 rounded-lg shadow-lg py-2 text-2xl font-bold'>
+                <button type="submit" className='mb-2 mx-4 bg-yellow-400 text-slate-900 rounded-lg shadow-lg py-2 
+                text-2xl font-bold'>
                  {!isLoginPage ? 'Register now' : 'Login'}
                 </button>
+                <div className='text-blue-800 cursor-pointer text-left ml-5 mb-4' onClick={handleOpenForgotPassword} >Forgot password?</div>
               </>
           </form>
         ) : (
@@ -362,6 +398,7 @@ const Auth = () => {
               </button>
             </form>
         )}
+        {isForgotPasswordOpen && <ForgotPassword onClose={handleCloseForgotPassword} />}
         {message && <p className={`text-${messageType === 'success' ? 'green' : 'red'}-600 mb-2`}>{message}</p>}
         <div>
           {isLoginPage ? `Don't have an account? ` : `Already have an account? `}
@@ -377,6 +414,7 @@ const Auth = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

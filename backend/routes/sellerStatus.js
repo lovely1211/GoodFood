@@ -64,17 +64,17 @@ router.get('/views', async (req, res) => {
   }
 
   try {
-    const stats = await SellerStats.findOne({ 
-      'items.sellerId': new mongoose.Types.ObjectId(sellerId) 
-    });
+    // Find the SellerStats document based on sellerId
+    const stats = await SellerStats.findOne({ sellerId: new mongoose.Types.ObjectId(sellerId) });
 
     if (!stats) {
       return res.status(404).json({ message: 'Seller stats not found' });
     }
 
-    res.json({
-      totalViews: stats.views || 0
-    });
+    // Calculate total views from the items array and the document-level views
+    const totalViews = stats.views + stats.items.reduce((acc, item) => acc + item.views, 0);
+
+    res.json({ totalViews });
   } catch (error) {
     console.error('Error fetching seller stats:', error);
     res.status(500).json({ message: 'Server error' });
@@ -95,7 +95,7 @@ router.get('/seller/:sellerId', async (req, res) => {
     // Count feedback for these orders
     const feedbackCounts = await Feedback.aggregate([
       { $match: { orderId: { $in: orders } } },
-      { $group: { _id: null, totalRatings: { $sum: 1 }, totalComments: { $sum: 1 } } }
+      { $group: { _id: null, totalRatings: { $sum: { $cond: [{ $gte: ["$rating", 1] }, 1, 0] } }, totalComments: { $sum: { $cond: [{ $ne: ["$comment", ""] }, 1, 0] } } } }
     ]);
 
     res.json({
@@ -193,6 +193,21 @@ router.get('/most-ordered-items/:sellerId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching most ordered items:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Route to get the overall rating of a seller
+router.get('/:sellerId/overall-rating', async (req, res) => {
+  try {
+      const { sellerId } = req.params;
+
+      // Fetch the seller's overall rating from wherever it's stored
+      const seller = await Seller.findById(sellerId).select('overallRating');
+      if (!seller) return res.status(404).json({ message: 'Seller not found' });
+
+      res.json({ sellerId, overallRating: seller.overallRating });
+  } catch (error) {
+      res.status(500).json({ message: 'Server Error', error });
   }
 });
 

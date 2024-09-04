@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const sellerStatsSchema = new mongoose.Schema({
+  sellerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Seller',
+    required: true
+  },
   name: String,
   items: [{
     productId: {
@@ -8,11 +13,7 @@ const sellerStatsSchema = new mongoose.Schema({
       ref: 'MenuItem',
       required: true
     },
-    sellerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'seller',
-      required: true
-    },
+    views: { type: Number, default: 0 },
   }],
   views: { type: Number, default: 0 }, 
 });

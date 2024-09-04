@@ -10,9 +10,11 @@ const OrderPage = () => {
   const { user } = useUser();
   const [errorMessage, setErrorMessage] = useState('');
 
-  useEffect(() => {
+  
+  const buyerId = JSON.parse(localStorage.getItem('userInfo'))._id;
+  useEffect(() => {   
+    const buyerId = JSON.parse(localStorage.getItem('userInfo'))._id;
     const fetchOrders = async () => {
-      const buyerId = JSON.parse(localStorage.getItem('userInfo'))._id;
       try {
         const response = await axios.get(`http://localhost:5000/api/orders/buyer/${buyerId}`);
         response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -90,7 +92,7 @@ const OrderPage = () => {
           price: item.price
         })),
         total: order.total,
-        buyerId: user._id, // This should be correct since it's coming from the context
+        buyerId: buyerId, // This should be correct since it's coming from the context
         sellerId: order.sellerId
       };
   
@@ -146,7 +148,7 @@ const OrderPage = () => {
                  <>
                    <div className='text-sm mt-1'>Order created at: {new Date(order.createdAt).toLocaleString()}</div>
                    <div className="text-red-600 mb-2 text-sm">Order has been delivered at: {new Date(order.deliveredAt).toLocaleString ()}</div>
-                   <Feedback orderId={order._id} buyerId={user._id} sellerId={order.sellerId} onFeedbackSubmitted={() => handleFeedbackSubmitted(order._id)} />
+                   <Feedback orderId={order._id} buyerId={buyerId} sellerId={order.sellerId} onFeedbackSubmitted={() => handleFeedbackSubmitted(order._id)} />
                    <button
                      className='font-semibold text-xl border-2 border-black rounded-lg p-1 w-full bg-blue-600 hover:bg-blue-800 text-white mt-2'
                      onClick={() => handleReorder(order)}

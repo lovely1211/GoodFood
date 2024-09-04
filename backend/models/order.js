@@ -48,7 +48,8 @@ const orderSchema = new mongoose.Schema({
   },
   deliveredAt: {
     type: Date,
-  }
+  },
+  isViewed: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

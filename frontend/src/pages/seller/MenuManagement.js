@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import BackBtn from './backBtn';
 import { MenuContext } from '../../context/menuContext';
@@ -23,23 +23,30 @@ const MenuItemManager = () => {
 
   const token = localStorage.getItem('token');
 
-  const fetchMenuItems = async () => {
-    if (!user) return;
+  const fetchMenuItems = useCallback(async () => {
+    if (!user || !user.id) {
+      console.error('User or user ID is missing');
+      return;
+    }
+    
     try {
-      const response = await axios.get(`http://localhost:5000/api/menu/seller/${user._id}`, {
+      const response = await axios.get(`http://localhost:5000/api/menu/seller/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMenuItems(response.data);
     } catch (error) {
       console.error('Error fetching menu items:', error);
     }
-  };
+  }, [user, token, setMenuItems]);  
 
   useEffect(() => {
-    if (user) {
+    if (user && user.id) {
       fetchMenuItems();
+    } else {
+      console.error('User is not authenticated or user ID is missing');
     }
-  }, );
+  }, [fetchMenuItems, user]);
+  
 
   const handleImageChange = (e) => {
     setItemImage(e.target.files[0]);

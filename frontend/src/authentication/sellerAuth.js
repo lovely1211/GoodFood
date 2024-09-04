@@ -3,6 +3,24 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../assets/Good Food.png';
 import { useUser } from '../context/userContext';
+import ForgotPassword from './sellerForgot';
+
+const ForgotPasswordPopup = ({ onClose }) => {
+  return (
+    <div className="fixed inset-0 flex justify-center items-center z-50">
+      <div className="absolute inset-0 bg-gray-500 opacity-50" onClick={onClose}></div>
+      <div className="relative bg-white p-6 rounded-lg shadow-lg z-10">
+        <ForgotPassword />
+        <button
+          className="absolute top-2 right-2 text-xl font-bold"
+          onClick={onClose}
+        >
+          &times;
+        </button>
+      </div>
+    </div>
+  );
+}; 
 
 const Auth = () => {
   const [isLoginPage, setIsLoginPage] = useState(true);
@@ -17,20 +35,24 @@ const Auth = () => {
   const [messageType, setMessageType] = useState(''); 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [isForgotPasswordPopupOpen, setIsForgotPasswordPopupOpen] = useState(false);
   const { setUser } = useUser(); 
 
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('userInfo');
+    
     const checkToken = async () => {
       if (token && storedUser) {
         try {
           const config = {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           };
+          
           const { data } = await axios.get('http://localhost:5000/api/sellerAuth/profile', config,  {
             headers: { Authorization: `Bearer ${token}` }
           });
@@ -41,11 +63,11 @@ const Auth = () => {
           localStorage.removeItem('token');
           localStorage.removeItem('userInfo');
         }
-      }
+      } 
     };
+    
     checkToken();
-  }, [navigate, setUser]);
-
+  }, [navigate, setUser]);  
   
   const displayMessage = (msg, type) => {
     setMessage(msg);
@@ -129,8 +151,11 @@ const Auth = () => {
       setUser(userInfo);
       localStorage.setItem("userInfo", JSON.stringify(userInfo)); 
       localStorage.setItem("token", data.token); 
-      setLoading(false);
+      // After successful login
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('role', 'seller');
 
+      setLoading(false);
       navigate("/");
       
     } catch (error) {
@@ -146,7 +171,19 @@ const Auth = () => {
     setMessageType('');
   };
 
+  const handleOpenForgotPassword = () => {
+    setIsForgotPasswordOpen(true);
+  };
+
+  const handleCloseForgotPassword = () => {
+    setIsForgotPasswordOpen(false);
+  };
+
   return (
+    <>
+    {isForgotPasswordPopupOpen && (
+      <ForgotPasswordPopup onClose={() => setIsForgotPasswordPopupOpen(false)} />
+    )}
     <div className='flex flex-col justify-center items-center mb-10'>
       <div className='bg-slate-400 w-[500px] rounded-b-lg mb-16 py-4 text-center justify-center items-center shadow-lg'>
         <div className='text-3xl mt-5 font-bold'>Welcome {isLoginPage && 'Back'}</div>
@@ -215,10 +252,12 @@ const Auth = () => {
               className="mb-4 p-2 mx-4 rounded-lg shadow-lg bg-white"
             />
           )}
-          <button type="submit" className='mb-4 mx-4 bg-yellow-400 text-slate-900 rounded-lg shadow-lg py-2 text-2xl font-bold' disabled={loading}>
+          <button type="submit" className='mb-2 mx-4 bg-yellow-400 text-slate-900 rounded-lg shadow-lg py-2 text-2xl font-bold' disabled={loading}>
             {loading ? "Loading..." : (isLoginPage ? 'Login' : 'Register now')}
           </button>
+          <div className='text-blue-800 cursor-pointer text-left ml-5 mb-4' onClick={handleOpenForgotPassword}>Forgot password?</div>
         </form>
+        {isForgotPasswordOpen && <ForgotPassword onClose={handleCloseForgotPassword} />}
         {message && <p className={`text-${messageType === 'success' ? 'green' : 'red'}-600 mb-2`}>{message}</p>}
         <div>
           {isLoginPage ? `Don't have an account? ` : `Already have an account? `}
@@ -233,6 +272,7 @@ const Auth = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

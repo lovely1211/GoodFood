@@ -5,6 +5,8 @@ import axios from 'axios';
 const ItemDetails = ({ item, onClose }) => {
   const [categories, setCategories] = useState({});
   const [showCategories, setShowCategories] = useState({});
+  const [categoryItems, setCategoryItems] = useState({});
+  const [activeCategory, setActiveCategory] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -43,7 +45,6 @@ const ItemDetails = ({ item, onClose }) => {
 
     try {
       const response = await axios.get(`http://localhost:5000/api/menu/${sellerId}/category-counts`);
-
       if (response.status === 200) {
         setCategories(prevCategories => ({
           ...prevCategories,
@@ -64,9 +65,36 @@ const ItemDetails = ({ item, onClose }) => {
     }
   };
 
-  const handleCategoryClick = (category) => {
-    onClose(); // Close the item details popup
-    navigate(`/?category=${category}`); // Navigate to menu page with selected category
+  const handleCategoryClick = async (sellerId, category) => {
+    if (activeCategory === category) {
+      setActiveCategory(null);
+      return;
+    }
+
+    setLoading(true);
+    setActiveCategory(category);
+
+    try {
+      const response = await axios.get(`http://localhost:5000/api/menu/${sellerId}/category/${category}/items`);
+      if (response.status === 200) {
+        setCategoryItems(prevItems => ({
+          ...prevItems,
+          [category]: response.data,
+        }));
+      } else {
+        throw new Error('Failed to fetch category items');
+      }
+    } catch (error) {
+      console.error('Error fetching category items:', error);
+      alert('Failed to fetch category items. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNavigateToItem = (productId) => {
+    navigate(`/?productId=${productId}`); // Adjust path if needed
+    onClose(); // Close the popup
   };
 
   return (
@@ -98,19 +126,32 @@ const ItemDetails = ({ item, onClose }) => {
                 {loading ? 'Loading...' : showCategories[sellerId._id] ? 'Hide' : 'Menu'}
               </button>
               {showCategories[sellerId._id] && categories[sellerId._id] && (
-                <div className="absolute bottom-16 left-5 w-1/2 bg-black text-white font-medium p-4 rounded-lg">
-                  Menu Categories
-                  {categories[sellerId._id].map((category, index) => (
-                    <div 
-                      key={index} 
-                      className="p-1 font-normal cursor-pointer"
-                      onClick={() => handleCategoryClick(category.category)} 
-                    >
-                      {category.category} ({category.count})
-                    </div>
-                  ))}
-                </div>
+               <div className="absolute bottom-16 left-5 w-1/2 bg-black text-white font-medium p-4 rounded-lg">
+                 Menu Categories :
+                 {categories[sellerId._id].map((category, index) => (
+                   <div 
+                     key={index} 
+                     className={`p-1 font-normal cursor-pointer ${activeCategory === category.category ? 'bg-gray-700' : ''}`}
+                     onClick={() => handleCategoryClick(sellerId._id, category.category)} 
+                   >
+                     {category.category} ({category.count})
+                   </div>
+                 ))}
+    
+                 {activeCategory && categoryItems[activeCategory] && (
+                   <div className="mt-2">
+                     <strong>Items in {activeCategory} :</strong>
+                     {categoryItems[activeCategory].map((categoryItem, index) => (
+                       <div key={index} onClick={() => handleNavigateToItem(categoryItem._id)} className="p-1 cursor-pointer border-t border-gray-400 flex justify-evenly">
+                         <p> {categoryItem.name}</p>
+                         <p> ₹ {categoryItem.price.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</p>
+                       </div>
+                     ))}
+                   </div>
+                  )}
+               </div>
               )}
+
             </div>
             <button onClick={handleShare} className="bg-blue-600 hover:bg-blue-800 text-white px-4 py-1 rounded">
               Share

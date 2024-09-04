@@ -50,6 +50,7 @@ const Menu = () => {
   const [isProfilePopupOpen, setProfilePopupOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [likedItems, setLikedItems] = useState([]);
+  const [sellers, setSellers] = useState([]);
   const location = useLocation();
   const itemRefs = useRef({}); 
 
@@ -58,6 +59,19 @@ const Menu = () => {
   const goToAbout = () => navigate('/about');
   const goToContact = () => navigate('/contact');
   const goToOrders = () => navigate('/orders');
+
+  useEffect(() => {
+    const fetchSellersWithRatings = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/sellerAuth/sellers/ratings');
+        setSellers(response.data);
+      } catch (error) {
+        console.error('Error fetching sellers with ratings:', error);
+      }
+    };
+
+    fetchSellersWithRatings();
+  }, []);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -90,35 +104,31 @@ const Menu = () => {
       navigate('/auth');
     }
   }, [navigate, user]);
-  
+
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/menu');
+        setProducts(response.data);
+        setFilteredProducts(response.data); 
+      } catch (error) {
+        console.error('Error fetching products:', error); 
+      }
+    };  
+
+    const fetchLikedItems = async () => {
+      const buyerId = JSON.parse(localStorage.getItem('userInfo'))._id;
+      try {
+        const response = await axios.get(`http://localhost:5000/api/menu/likedItems/${buyerId}`);
+        setLikedItems(response.data.map(item => item.productId));
+      } catch (error) {
+        console.error('Error fetching liked items:', error);
+      }
+    };
+
     fetchProducts();
     fetchLikedItems();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/menu');
-      const productsWithSeller = response.data.map(product => ({
-        ...product,
-        sellerName: product.sellerId?.name || 'Unknown Seller',
-      }));
-      setProducts(productsWithSeller);
-      setFilteredProducts(productsWithSeller); 
-    } catch (error) {
-      console.error('Error fetching products:', error); 
-    }
-  };  
-
-  const fetchLikedItems = async () => {
-    const buyerId = JSON.parse(localStorage.getItem('userInfo'))._id;
-    try {
-      const response = await axios.get(`http://localhost:5000/api/menu/likedItems/${buyerId}`);
-      setLikedItems(response.data.map(item => item.productId));
-    } catch (error) {
-      console.error('Error fetching liked items:', error);
-    }
-  };
+  }, [user._id]);
 
   const handleOpenShopping = () => {
     setIsActive((prevIsActive) => !prevIsActive);
@@ -297,13 +307,17 @@ const Menu = () => {
         <div className='flex flex-row items-center'>
         <div className='mx-1 border-2 border-black px-2 rounded-xl bg-yellow-400 text-black cursor-pointer'>Home</div>
 
-        <div className='mx-1 border-2 border-black px-2 text-white rounded-xl bg-red-600 hover:bg-yellow-400 hover:text-black cursor-pointer' onClick={goToOrders}>Orders</div>
+        <div className='mx-1 border-2 border-black px-2 text-white rounded-xl bg-red-600 hover:bg-yellow-400 hover:text- 
+         black cursor-pointer' onClick={goToOrders}>Orders</div>
 
-        <div className='mx-1 px-2 border-2 border-black text-white rounded-xl bg-red-600 hover:bg-yellow-400  hover:text-black cursor-pointer' onClick={handleOpenProfile}>Profile</div>
+        <div className='mx-1 px-2 border-2 border-black text-white rounded-xl bg-red-600 hover:bg-yellow-400  hover:text- 
+         black cursor-pointer' onClick={handleOpenProfile}>Profile</div>
 
-        <div className='mx-1 border-2 border-black px-2 text-white rounded-xl bg-red-600 hover:bg-yellow-400 hover:text-black cursor-pointer' onClick={goToAbout}>About</div>
+        <div className='mx-1 border-2 border-black px-2 text-white rounded-xl bg-red-600 hover:bg-yellow-400 hover:text- 
+         black cursor-pointer' onClick={goToAbout}>About</div>
 
-        <div className='mx-1 border-2 border-black px-2 text-white rounded-xl bg-red-600 hover:bg-yellow-400 hover:text-black cursor-pointer' onClick={goToContact}>Contact us</div>
+        <div className='mx-1 border-2 border-black px-2 text-white rounded-xl bg-red-600 hover:bg-yellow-400 hover:text- 
+         black cursor-pointer' onClick={goToContact}>Contact us</div>
 
         {isProfileOpen && <Profile onClose={handleCloseProfile} />}
         </div>
@@ -317,7 +331,6 @@ const Menu = () => {
          <span className="bg-red-600 rounded-full text-sm text-white absolute px-2 py-1">{quantity}</span>
        </div>
        </div>
-
       </div>
       
       <div className='relative w-full h-96'>
@@ -379,52 +392,69 @@ const Menu = () => {
           </div>
 
           <div className="grid grid-cols-3 gap-4 mt-2 p-4">
-          {filteredProducts.map((product) => (
-           <div key={product._id} 
-           className="bg-white rounded-md p-3 mx-1 overflow-hidden relative" 
-           ref={(el) => (itemRefs.current[product._id] = el)} >
-             <img
-               src={`http://localhost:5000/uploads/${product.image}`}
-               alt={product.name}
-               className="rounded-md w-full h-64 object-cover relative"
-               onClick={() => recordView(product._id)}
-             />
-             <FaHeart
-               className={`absolute top-4 right-4 text-2xl cursor-pointer heart-icon ${
-                 likedItems.includes(product._id) ? 'text-red-600' : 'text-white'
-               }`}
-               onClick={() => {
-                toggleLike(product._id);
-              }}
-             />
-
-             <div className="">
-               <div className='text-sm text-gray-600 text-center font-bold'>{product.sellerName}</div>
-               <div className='flex flex-row items-center justify-evenly'>
-                 <div className="text-lg font-bold text-center">{product.name}</div>
-                 <div className="text-lg font-bold text-center">₹ {product.price}</div>
+           {filteredProducts.map((product) => {
+             // Use product.sellerId._id for the comparison
+             const seller = sellers.find(seller => String(seller._id) === String(product.sellerId._id));
+             return (
+               <div
+                 key={product._id}
+                 className="bg-white rounded-md p-3 mx-1 overflow-hidden relative"
+                 ref={(el) => (itemRefs.current[product._id] = el)}
+               >
+                 <img
+                   src={`http://localhost:5000/uploads/${product.image}`}
+                   alt={product.name}
+                   className="rounded-md w-full h-64 object-cover relative"
+                   onClick={() => recordView(product._id)}
+                 />
+                 <FaHeart
+                   className={`absolute top-4 right-4 text-2xl cursor-pointer heart-icon ${
+                     likedItems.includes(product._id) ? 'text-red-600' : 'text-white'
+                   }`}
+                   onClick={() => {
+                     toggleLike(product._id);
+                   }}
+                 />
+                 <div className="">
+                   <div className="mt-1 flex flex-row justify-evenly text-sm text-gray-700 text-center font-bold">
+                     {seller ? seller.name : "Unknown Seller"}
+                     {seller ? (
+                     <div className="text-center">
+                       <p className="bg-yellow-500 rounded-lg px-2 py-1">
+                         {seller.averageRating?.toFixed(1) || "No ratings yet"} ⭐
+                       </p>
+                     </div>
+                     ) : (
+                      <p>No seller found for this product.</p>
+                     )}
+                   </div>
+                   <div className="flex flex-row items-center justify-evenly">
+                     <div className="text-lg font-bold text-center">{product.name}</div>
+                     <div className="text-lg font-bold text-center">{product.price}₹</div>
+                   </div>
+                   <button
+                     className="border-2 border-black rounded-xl hover:bg-gray-800 bg-slate-900 text-white font-bold p-2 w-1/2 text-xl"
+                     onClick={() => {
+                       addToCard(product._id);
+                       recordView(product._id);
+                     }}
+                   >
+                     Add To Cart
+                     {listCards[product._id] ? ` : ${listCards[product._id].quantity}` : null}
+                   </button>
+                   <button
+                     className="border-2 border-black rounded-xl hover:bg-gray-800 bg-slate-900 text-white font-bold p-2 w-1/2 text-xl"
+                     onClick={() => {
+                       handleViewItemDetails(product);
+                       recordView(product._id);
+                     }}
+                   >
+                     View Details
+                   </button>
+                 </div>
                </div>
-               <button
-                 className="border-2 border-black rounded-xl hover:bg-gray-800 bg-slate-900 text-white font-bold p-2 w-1/2 text-xl"
-                 onClick={() => {
-                   addToCard(product._id);
-                   recordView(product._id);
-                 }}>
-                 Add To Cart
-                 {listCards[product._id] ? ` : ${listCards[product._id].quantity}` : null}
-               </button>
-               <button
-                 className="border-2 border-black rounded-xl hover:bg-gray-800 bg-slate-900 text-white font-bold p-2 w-1/2 text-xl"
-                 onClick={() => {
-                   handleViewItemDetails(product);
-                   recordView(product._id);
-                 }}>
-                 View Details
-               </button>
-             </div>
-           </div>
-         ))}
-
+              );
+             })}
           </div>
 
         {isActive && (

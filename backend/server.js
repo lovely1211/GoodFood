@@ -14,7 +14,7 @@ const menuItemRoutes = require('./routes/menuRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const orderStatsRoutes = require('./routes/orderStats');
 const feedbackRoutes = require('./routes/feedbackRoutes');
-const sellerStatusRoutes = require('./routes/sellerStatus')
+const sellerStatusRoutes = require('./routes/sellerStatus');
 
 require('dotenv').config();
 const app = express();

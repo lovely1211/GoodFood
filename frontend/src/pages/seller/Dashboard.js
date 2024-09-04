@@ -1,6 +1,7 @@
 // pages/seller/Dashboard
 
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {useUser} from '../../context/userContext';
 import Profile from './Profile';
@@ -32,10 +33,23 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [isProfilePopupOpen, setProfilePopupOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [newOrderCount, setNewOrderCount] = useState(0);
   const { user } = useUser();
 
   const sellerId = JSON.parse(localStorage.getItem('userInfo')).id;
 
+  useEffect(() => {
+    const fetchNewOrderCount = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/orders/seller/${sellerId}/new-count`);
+        setNewOrderCount(response.data.count);
+      } catch (error) {
+        console.error('Error fetching new order count:', error);
+      }
+    };
+
+    fetchNewOrderCount();
+  }, [sellerId]);
 
   const handleOpenProfile = () => {
     setIsProfileOpen(true);
@@ -48,8 +62,14 @@ const Dashboard = () => {
   const goToMenu = () => navigate('/menu');
   const goToAbout = () => navigate('/about');
   const goToContact = () => navigate('/contact');
-  const goToOrders = () => navigate('/orders');
+  const goToOrders = () => {
+    // Mark new orders as viewed when navigating to the orders page
+    axios.patch(`http://localhost:5000/api/orders/seller/${sellerId}/mark-viewed`)
+      .then(() => setNewOrderCount(0))
+      .catch(err => console.error('Error marking orders as viewed:', err));
 
+    navigate('/orders');
+  };
   
   useEffect(() => { 
     const token = localStorage.getItem('token');
@@ -69,7 +89,13 @@ const Dashboard = () => {
         
                <div className='mx-1 border-2 border-black px-2 rounded-xl bg-red-600 hover:bg-yellow-400 hover:text-black text-white cursor-pointer' onClick={goToMenu}>Menu</div>
 
-               <div className='mx-1 border-2 border-black px-2 rounded-xl bg-red-600 hover:bg-yellow-400 hover:text-black text-white cursor-pointer' onClick={goToOrders}>Orders
+               <div className='mx-1 border-2 border-black px-2 rounded-xl bg-red-600 hover:bg-yellow-400 hover:text-black text-white cursor-pointer relative' onClick={goToOrders}>
+                 Orders
+                 {newOrderCount > 0 && (
+                   <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-black bg-yellow-400 rounded-full">
+                     {newOrderCount}
+                   </span>
+                 )}
                </div>
 
                <div className='mx-1 border-2 border-black px-2 rounded-xl bg-red-600 hover:bg-yellow-400 hover:text-black text-white cursor-pointer' onClick={handleOpenProfile}>Profile</div>

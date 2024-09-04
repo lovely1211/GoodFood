@@ -3,10 +3,15 @@ import { Navigate } from 'react-router-dom';
 import { useUser } from '../context/userContext';
 
 const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token'); 
   const { user } = useUser();
 
   if (!user) {
     return <Navigate to="/auth" />;
+  }
+
+  if (!token) {
+    return <Navigate to="/auth" replace />;
   }
 
   // Redirect based on user role
@@ -17,7 +22,7 @@ const ProtectedRoute = ({ children }) => {
   if (user.role === 'seller' && window.location.pathname.startsWith('/buyer')) {
     return <Navigate to="/seller-home" />;
   }
-
+  
   return children;
 };
 

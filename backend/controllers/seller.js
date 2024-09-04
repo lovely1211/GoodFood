@@ -5,7 +5,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendVerificationEmail = require('../services/verifyEmail')
 
-
 // Email Verification
 exports.verifyEmail = async (req, res) => {
     try {
@@ -88,3 +87,36 @@ exports.loginUser = async (req, res) => {
     }
 };
 
+// In your seller controller
+exports.getAllSellersWithRatings = async (req, res) => {
+    try {
+      const sellers = await User.aggregate([
+        {
+          $lookup: {
+            from: "feedbacks", // Assuming your feedback collection is named 'feedbacks'
+            localField: "_id",
+            foreignField: "sellerId",
+            as: "feedbacks",
+          },
+        },
+        {
+          $addFields: {
+            totalRatings: { $size: "$feedbacks" },
+            averageRating: { $avg: "$feedbacks.rating" },
+          },
+        },
+        {
+          $project: {
+            name: 1,
+            averageRating: 1,
+            totalRatings: 1,
+          },
+        },
+      ]);
+  
+      res.status(200).json(sellers);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+};
+  

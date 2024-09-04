@@ -1,7 +1,7 @@
 // App.js
 
 import React from 'react';
-import RoutesComp from './manageRoutes/buyerRoutes';
+import RoutesComp from './manageRoutes/HomeRoutes';
 import Logo from './assets/Good Food.png';
 import './App.css';
 

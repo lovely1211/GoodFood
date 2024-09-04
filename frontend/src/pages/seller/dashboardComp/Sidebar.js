@@ -11,19 +11,16 @@ const Sidebar = ({ sellerId }) => {
     totalComments: 0,
     mostOrderedItems: []
   });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchSellerStats = async () => {
       try {
-        // Fetch total views
         const viewsResponse = await axios.get('http://localhost:5000/api/seller/status/views', {
           params: { sellerId }
         });
 
-        // Fetch ratings and comments
         const feedbackResponse = await axios.get(`http://localhost:5000/api/seller/status/seller/${sellerId}`);
-
-        // Fetch most ordered items
         const itemsResponse = await axios.get(`http://localhost:5000/api/seller/status/most-ordered-items/${sellerId}`);
 
         setStats({
@@ -34,6 +31,7 @@ const Sidebar = ({ sellerId }) => {
         });
       } catch (error) {
         console.error('Error fetching seller stats:', error);
+        setError('Failed to load statistics. Please try again later.');
       }
     };
 
@@ -41,6 +39,10 @@ const Sidebar = ({ sellerId }) => {
       fetchSellerStats();
     }
   }, [sellerId]);
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   const status = [
     { title: 'Total Views', count: stats.totalViews, icon: View },
@@ -61,7 +63,7 @@ const Sidebar = ({ sellerId }) => {
           </div>
         </div>
       ))}
-      
+
       <h3 className="text-xl font-semibold mb-4">Most Popular Items</h3>
       {stats.mostOrderedItems.map((item, index) => (
         <div key={index} className="w-full p-6 bg-white shadow-md rounded-lg mb-4">
@@ -71,6 +73,6 @@ const Sidebar = ({ sellerId }) => {
       ))}
     </div>
   );
-}
+};
 
 export default Sidebar;

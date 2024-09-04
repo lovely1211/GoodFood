@@ -47,6 +47,7 @@ const createOrder = async (req, res) => {
       items: itemsWithSeller,
       total,
       status: 'Pending',
+      isViewed: false,
     });
     
     await order.save();
