@@ -6,8 +6,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: EMAIL_USER, // email
-    pass: EMAIL_PASS       // app-specific password
+    user: process.env.EMAIL_USER, // email
+    pass: process.env.EMAIL_PASS       // app-specific password
   },
   tls: {
     rejectUnauthorized: false
@@ -23,7 +23,7 @@ router.post('/sendQuery', (req, res) => {
 
   const mailOptions = {
     from: email,
-    to: EMAIL_USER, //  email
+    to: process.env.EMAIL_USER, //  email
     subject: `Query from ${name} - ${queryType}`,
     text: `
       Name: ${name}
