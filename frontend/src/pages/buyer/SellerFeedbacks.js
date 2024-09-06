@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 
 const SellerRating = ({ sellerId }) => {
     const [rating, setRating] = useState(null);
@@ -7,7 +7,7 @@ const SellerRating = ({ sellerId }) => {
     useEffect(() => {
         const fetchSellerRating = async () => {
             try {
-                const response = await axios.get(`/api/seller/${sellerId}/overall-rating`);
+                const response = await axiosInstance.get(`/seller/${sellerId}/overall-rating`);
                 setRating(response.data.overallRating);
             } catch (error) {
                 console.error('Error fetching seller rating:', error);

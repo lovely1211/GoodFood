@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useUser } from '../../context/userContext';
 import BackBtn from './menuComp/backBtn';
 import Feedback from './Feedback';
+import axiosInstance from '../../axiosInstance';
 
 const OrderPage = () => {
   const [orders, setOrders] = useState([]);
@@ -16,7 +16,7 @@ const OrderPage = () => {
     const buyerId = JSON.parse(localStorage.getItem('userInfo'))._id;
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/orders/buyer/${buyerId}`);
+        const response = await axiosInstance.get(`/orders/buyer/${buyerId}`);
         response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setOrders(response.data);
       } catch (error) {
@@ -70,7 +70,7 @@ const OrderPage = () => {
 
   const handleCancelOrder = async (orderId) => {
     try {
-      await axios.put(`http://localhost:5000/api/orders/cancel/${orderId}`);
+      await axiosInstance.put(`/orders/cancel/${orderId}`);
       setOrders(prevOrders =>
         prevOrders.map(order =>
           order._id === orderId ? { ...order, status: 'Canceled' } : order
@@ -96,7 +96,7 @@ const OrderPage = () => {
         sellerId: order.sellerId
       };
   
-      await axios.post('http://localhost:5000/api/orders/reorder', reorderData);
+      await axiosInstance.post('/orders/reorder', reorderData);
       alert('Order placed successfully!');
     } catch (error) {
       setErrorMessage('Error reordering: ' + error.message);

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import View from '../../../assets/view icon.png';
 import Review from '../../../assets/review.png';
 import Feedback from '../../../assets/feedback.png';
+import axiosInstance from '../../../axiosInstance';
 
 const Sidebar = ({ sellerId }) => {
   const [stats, setStats] = useState({
@@ -16,12 +16,13 @@ const Sidebar = ({ sellerId }) => {
   useEffect(() => {
     const fetchSellerStats = async () => {
       try {
-        const viewsResponse = await axios.get('http://localhost:5000/api/seller/status/views', {
+        const viewsResponse = await axiosInstance.get('/seller/status/views', {
           params: { sellerId }
         });
 
-        const feedbackResponse = await axios.get(`http://localhost:5000/api/seller/status/seller/${sellerId}`);
-        const itemsResponse = await axios.get(`http://localhost:5000/api/seller/status/most-ordered-items/${sellerId}`);
+        const feedbackResponse = await axiosInstance.get(`/seller/status/seller/${sellerId}`);
+
+        const itemsResponse = await axiosInstance.get(`/seller/status/most-ordered-items/${sellerId}`);
 
         setStats({
           totalViews: viewsResponse.data.totalViews || 0,

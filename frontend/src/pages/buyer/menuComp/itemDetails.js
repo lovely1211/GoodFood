@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../axiosInstance';
 
 const ItemDetails = ({ item, onClose }) => {
   const [categories, setCategories] = useState({});
@@ -44,7 +44,7 @@ const ItemDetails = ({ item, onClose }) => {
     setLoading(true);
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/menu/${sellerId}/category-counts`);
+      const response = await axiosInstance.get(`/menu/${sellerId}/category-counts`);
       if (response.status === 200) {
         setCategories(prevCategories => ({
           ...prevCategories,
@@ -75,7 +75,7 @@ const ItemDetails = ({ item, onClose }) => {
     setActiveCategory(category);
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/menu/${sellerId}/category/${category}/items`);
+      const response = await axiosInstance.get(`/menu/${sellerId}/category/${category}/items`);
       if (response.status === 200) {
         setCategoryItems(prevItems => ({
           ...prevItems,

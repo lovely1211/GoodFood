@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import search_icon from '../../../assets/search-icon.png';
+import axiosInstance from '../../../axiosInstance';
 
 const Search = ({ onSelectDish }) => {
     const [query, setQuery] = useState('');
@@ -8,7 +8,7 @@ const Search = ({ onSelectDish }) => {
 
     useEffect(() => {
         if (query) {
-            axios.get(`http://localhost:5000/api/menu/search?q=${query}`)
+            axiosInstance.get(`/menu/search?q=${query}`)
                 .then(response => setItems(response.data))
                 .catch(error => console.error('Error fetching dishes:', error));
         } else {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import BackBtn from './menuComp/backBtn';
+import axiosInstance from '../../axiosInstance';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/service/sendQuery', formData);
+      await axiosInstance.post('/service/sendQuery', formData);
       alert('Your query has been sent successfully!');
       setFormData({
         queryType: '',

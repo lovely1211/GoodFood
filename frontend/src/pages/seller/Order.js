@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import BackBtn from './backBtn';
 import { useUser } from '../../context/userContext';
+import axiosInstance from '../../axiosInstance';
 
 const formatAddress = (address) => {
   if (!address) return 'Address not available';
@@ -34,7 +34,7 @@ const OrderPage = () => {
       }
 
       try {
-        const response = await axios.get(`http://localhost:5000/api/orders/seller/${sellerId}`);
+        const response = await axiosInstance.get(`/orders/seller/${sellerId}`);
         response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setOrders(response.data);
       } catch (error) {
@@ -84,7 +84,7 @@ const OrderPage = () => {
           continue; // Skip to the next order
         }
         try {
-          const response = await axios.get(`http://localhost:5000/api/feedback/${order._id}`);
+          const response = await axiosInstance.get(`/feedback/${order._id}`);
           
           if (response.data) {
             setFeedbackData(prevFeedback => ({
@@ -108,7 +108,7 @@ const OrderPage = () => {
   const handleSetDeliveryTime = async (orderId, timeInMinutes) => {
     const deliveryTime = new Date(new Date().getTime() + timeInMinutes * 60000).toISOString();
     try {
-      await axios.patch(`http://localhost:5000/api/orders/${orderId}/delivery-time`, {
+      await axiosInstance.patch(`/orders/${orderId}/delivery-time`, {
         deliveryTime,
       });
       localStorage.setItem(`deliveryTime_${orderId}`, deliveryTime); // Save end time in localStorage
@@ -124,7 +124,7 @@ const OrderPage = () => {
     const receivedTime = new Date().toISOString();
 
     try {
-      await axios.patch(`http://localhost:5000/api/orders/${orderId}`, {
+      await axiosInstance.patch(`/orders/${orderId}`, {
         status: 'Received',
         receivedAt: receivedTime,
       });
@@ -140,7 +140,7 @@ const OrderPage = () => {
     const deliveredTime = new Date().toISOString();
 
     try {
-      await axios.patch(`http://localhost:5000/api/orders/${orderId}`, {
+      await axiosInstance.patch(`/orders/${orderId}`, {
         status: 'Delivered',
         deliveredAt: deliveredTime,
       });
@@ -163,7 +163,7 @@ const OrderPage = () => {
     const extendedDeliveryTime = new Date(currentDeliveryTime.getTime() + extraMinutes * 60000).toISOString();
 
     try {
-      await axios.patch(`http://localhost:5000/api/orders/${orderId}/delivery-time`, {
+      await axiosInstance.patch(`/orders/${orderId}/delivery-time`, {
         deliveryTime: extendedDeliveryTime,
       });
       localStorage.setItem(`deliveryTime_${orderId}`, extendedDeliveryTime); // Update end time in localStorage

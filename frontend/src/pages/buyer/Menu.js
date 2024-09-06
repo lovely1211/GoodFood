@@ -1,8 +1,8 @@
 // menu.js file
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Profile from './Profile';
+import axiosInstance from '../../axiosInstance';
 import {useUser} from '../../context/userContext';
 import Search from './menuComp/Search';
 import UserDetailPopup from './menuComp/userDetailsPopup';
@@ -63,7 +63,7 @@ const Menu = () => {
   useEffect(() => {
     const fetchSellersWithRatings = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/sellerAuth/sellers/ratings');
+        const response = await axiosInstance.get('/sellerAuth/sellers/ratings');
         setSellers(response.data);
       } catch (error) {
         console.error('Error fetching sellers with ratings:', error);
@@ -84,7 +84,7 @@ const Menu = () => {
 
   const recordView = async (productId) => {
     try {
-      await axios.post('http://localhost:5000/api/seller/status/views', { productId });
+      await axiosInstance.post('/seller/status/views', { productId });
     } catch (error) {
       console.error('Error recording view:', error.response ? error.response.data : error.message);
     }
@@ -108,7 +108,7 @@ const Menu = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/menu');
+        const response = await axiosInstance.get('/menu');
         setProducts(response.data);
         setFilteredProducts(response.data); 
       } catch (error) {
@@ -119,7 +119,7 @@ const Menu = () => {
     const fetchLikedItems = async () => {
       const buyerId = JSON.parse(localStorage.getItem('userInfo'))._id;
       try {
-        const response = await axios.get(`http://localhost:5000/api/menu/likedItems/${buyerId}`);
+        const response = await axiosInstance.get(`/menu/likedItems/${buyerId}`);
         setLikedItems(response.data.map(item => item.productId));
       } catch (error) {
         console.error('Error fetching liked items:', error);
@@ -198,7 +198,7 @@ const Menu = () => {
         throw new Error('User not authenticated. Please log in.');
       }
   
-      const response = await axios.post('http://localhost:5000/api/orders/create', orderData, {
+      const response = await axiosInstance.post('/orders/create', orderData, {
         headers: { Authorization: `Bearer ${token}` }
       });
   
@@ -280,10 +280,10 @@ const Menu = () => {
     // Send the like/unlike request to the backend
     if (isLiked) {
       // Remove the like
-      await axios.delete(`http://localhost:5000/api/menu/likedItems/${buyerId}/${productId}`);
+      await axiosInstance.delete(`/menu/likedItems/${buyerId}/${productId}`);
     } else {
       // Add the like
-      await axios.post('http://localhost:5000/api/menu/likedItems', {
+      await axiosInstance.post('/menu/likedItems', {
         buyerId,
         productId,
         action: 'like',

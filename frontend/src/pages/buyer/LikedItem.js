@@ -1,9 +1,9 @@
 // liked item file
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Assuming you're using React Router for navigation
+import { useNavigate } from 'react-router-dom'; 
 import BackBtn from './menuComp/backBtn';
-import axios from 'axios';
 import { FaHeart } from 'react-icons/fa'; // Import the heart icon
+import axiosInstance from '../../axiosInstance';
 
 const LikedItems = () => {
   const [likedItems, setLikedItems] = useState([]);
@@ -15,7 +15,7 @@ const LikedItems = () => {
   useEffect(() => {
     const fetchLikedItems = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/menu/likedItems/${buyerId}`);
+        const response = await axiosInstance.get(`/menu/likedItems/${buyerId}`);
         response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         const likedItemsFromBackend = response.data.map(item => item.productId);
         setLikedItems(likedItemsFromBackend);
@@ -29,7 +29,7 @@ const LikedItems = () => {
 
   const deleteLikedItem = async (productId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/menu/${buyerId}/${productId}`, {
+      await axiosInstance.delete(`/menu/${buyerId}/${productId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       // Update the likedItems state by filtering out the deleted item

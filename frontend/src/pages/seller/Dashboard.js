@@ -1,7 +1,6 @@
 // pages/seller/Dashboard
 
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import {useUser} from '../../context/userContext';
 import Profile from './Profile';
@@ -9,6 +8,7 @@ import Sidebar from './dashboardComp/Sidebar'
 import DashboardStats from './dashboardComp/Stats';
 // import Charts from './dashboardComp/Charts';
 import CustomerReview from './dashboardComp/Review';
+import axiosInstance from '../../axiosInstance';
 
 
 // Popup Component
@@ -41,7 +41,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchNewOrderCount = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/orders/seller/${sellerId}/new-count`);
+        const response = await axiosInstance.get(`/orders/seller/${sellerId}/new-count`);
         setNewOrderCount(response.data.count);
       } catch (error) {
         console.error('Error fetching new order count:', error);
@@ -64,7 +64,7 @@ const Dashboard = () => {
   const goToContact = () => navigate('/contact');
   const goToOrders = () => {
     // Mark new orders as viewed when navigating to the orders page
-    axios.patch(`http://localhost:5000/api/orders/seller/${sellerId}/mark-viewed`)
+    axiosInstance.patch(`/orders/seller/${sellerId}/mark-viewed`)
       .then(() => setNewOrderCount(0))
       .catch(err => console.error('Error marking orders as viewed:', err));
 

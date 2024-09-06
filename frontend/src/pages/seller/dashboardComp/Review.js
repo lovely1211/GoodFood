@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../axiosInstance';
 
 const Review = ({ sellerId }) => {
   const [reviews, setReviews] = useState([]);
@@ -7,7 +7,7 @@ const Review = ({ sellerId }) => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/seller/status/today', {
+        const response = await axiosInstance.get('/seller/status/today', {
           params: { sellerId }
         });
         setReviews(response.data);

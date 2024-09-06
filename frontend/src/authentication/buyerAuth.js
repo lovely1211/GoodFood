@@ -1,11 +1,11 @@
 // authentication/buyerAuth.js
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../assets/Good Food.png';
 import { useUser } from '../context/userContext';
 import ForgotPassword from './buyerForgot';
+import axiosInstance from '../axiosInstance';
 
 const ForgotPasswordPopup = ({ onClose }) => {
   return (
@@ -63,7 +63,7 @@ const Auth = () => {
               Authorization: `Bearer ${token}`
             }
           };
-          const { data } = await axios.get('http://localhost:5000/api/buyerAuth/profile', config,  {
+          const { data } = await axiosInstance.get('/buyerAuth/profile', config,  {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUser(data.user);
@@ -130,7 +130,7 @@ const Auth = () => {
         },
       };
   
-      const { data } = await axios.post("http://localhost:5000/api/buyerAuth/register", formData, config);
+      const { data } = await axiosInstance.post("/buyerAuth/register", formData, config);
   
       if (data && data.user && data.user._id) {
         setUserId(data.user._id);
@@ -152,7 +152,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const verificationResponse = await axios.post("http://localhost:5000/api/buyerAuth/verify-email", {
+      const verificationResponse = await axiosInstance.post("/buyerAuth/verify-email", {
         userId,
         code
       });
@@ -191,7 +191,7 @@ const Auth = () => {
 
         const normalizedEmail = email.toLowerCase(); 
 
-        const { data } = await axios.post("http://localhost:5000/api/buyerAuth/login", { email: normalizedEmail, password }, config);      
+        const { data } = await axiosInstance.post("/buyerAuth/login", { email: normalizedEmail, password }, config);      
 
         alert('Login successful!');
 

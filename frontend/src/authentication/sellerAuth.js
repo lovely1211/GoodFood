@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../assets/Good Food.png';
 import { useUser } from '../context/userContext';
 import ForgotPassword from './sellerForgot';
+import axiosInstance from '../axiosInstance';
 
 const ForgotPasswordPopup = ({ onClose }) => {
   return (
@@ -53,7 +53,7 @@ const Auth = () => {
             },
           };
           
-          const { data } = await axios.get('http://localhost:5000/api/sellerAuth/profile', config,  {
+          const { data } = await axiosInstance.get('/sellerAuth/profile', config,  {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUser(data.user);
@@ -108,7 +108,7 @@ const Auth = () => {
         },
       };
 
-      const { data } = await axios.post("http://localhost:5000/api/sellerAuth/register", formData, config);
+      const { data } = await axiosInstance.post("/sellerAuth/register", formData, config);
 
       alert("Registration successful");
       
@@ -140,7 +140,7 @@ const Auth = () => {
 
       const normalizedEmail = email.toLowerCase(); 
 
-      const { data } = await axios.post("http://localhost:5000/api/sellerAuth/login", { email: normalizedEmail, password }, config);
+      const { data } = await axiosInstance.post("/sellerAuth/login", { email: normalizedEmail, password }, config);
 
       alert("Login successful!");
       const userInfo = {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import axiosInstance from '../axiosInstance';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -20,7 +20,7 @@ const ResetPassword = () => {
       return;
     }
     try {
-      await axios.put('http://localhost:5000/api/sellerAuth/reset-password', { token, password });
+      await axiosInstance.put('/sellerAuth/reset-password', { token, password });
       setMessage('Password has been reset successfully');
       navigate('/login');
     } catch (error) {

@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect, useCallback } from 'react';
-import axios from 'axios';
 import BackBtn from './backBtn';
 import { MenuContext } from '../../context/menuContext';
 import { useUser } from '../../context/userContext';
+import axiosInstance from '../../axiosInstance';
 
 const MenuItemManager = () => {
   const { menuItems, setMenuItems } = useContext(MenuContext);
@@ -30,7 +30,7 @@ const MenuItemManager = () => {
     }
     
     try {
-      const response = await axios.get(`http://localhost:5000/api/menu/seller/${user.id}`, {
+      const response = await axiosInstance.get(`/menu/seller/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMenuItems(response.data);
@@ -63,7 +63,7 @@ const MenuItemManager = () => {
     formData.append('sellerName', user.name);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/menu/', formData, {
+      const response = await axiosInstance.post('/menu/', formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
@@ -87,7 +87,7 @@ const MenuItemManager = () => {
     formData.append('sellerId', user._id);
 
     try {
-      const response = await axios.patch(`http://localhost:5000/api/menu/${editItemId}`, formData, {
+      const response = await axiosInstance.patch(`/menu/${editItemId}`, formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
@@ -102,7 +102,7 @@ const MenuItemManager = () => {
 
   const deleteMenuItem = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/menu/${id}`, {
+      await axiosInstance.delete(`/menu/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMenuItems(menuItems.filter(item => item._id !== id));

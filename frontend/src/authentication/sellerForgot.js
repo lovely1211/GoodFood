@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../axiosInstance';
 
 const ForgotPassword = ({onClose}) => {
   const [email, setEmail] = useState('');
@@ -10,7 +10,7 @@ const ForgotPassword = ({onClose}) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/sellerAuth/forgot-password', { email });
+      await axiosInstance.post('/sellerAuth/forgot-password', { email });
       setMessage('Password reset link sent to your email');
     } catch (error) {
       setMessage(error.response?.data?.message || error.message);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Logout from '../../components/logout';
-import axios from 'axios'; 
+import axiosInstance from '../../axiosInstance';
 
 const defaultProfilePicture = '../../assets/default.png';
 
@@ -82,7 +82,7 @@ const Profile = ({ onClose }) => {
 
   const handleSaveClick = async () => {
     try {
-      const response = await axios.put(`http://localhost:5000/api/buyerAuth/${user._id}`, formData);
+      const response = await axiosInstance.put(`/buyerAuth/${user._id}`, formData);
       const updatedUser = response.data;
 
       setUser(updatedUser);

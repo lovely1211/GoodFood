@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../axiosInstance';
 
 const UserDetailPopup = ({ onClose, onConfirm }) => {
   const [user, setUser] = useState(null);
@@ -88,8 +88,8 @@ const UserDetailPopup = ({ onClose, onConfirm }) => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const response = await axios.put(
-        `http://localhost:5000/api/buyerAuth/${user._id}`, 
+      const response = await axiosInstance.put(
+        `/buyerAuth/${user._id}`, 
         updatedUser,
         { 
           headers: { 

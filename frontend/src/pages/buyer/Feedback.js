@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { FaStar } from 'react-icons/fa';
+import axiosInstance from '../../axiosInstance';
 
 const Feedback = ({ orderId, buyerId, onFeedbackSubmitted }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +34,7 @@ const Feedback = ({ orderId, buyerId, onFeedbackSubmitted }) => {
     });
 
     try {
-      await axios.post('http://localhost:5000/api/feedback/submit', formData, {
+      await axiosInstance.post('/feedback/submit', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setFeedbackSubmitted(true);
