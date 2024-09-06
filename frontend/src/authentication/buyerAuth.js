@@ -239,8 +239,8 @@ const Auth = () => {
     )}
     <div className='flex mb-10 flex-col justify-center items-center'>
       <div className='bg-slate-400 w-[500px] rounded-b-lg mb-16 py-4 text-center justify-center items-center shadow-lg'>
-        <div className='text-3xl mt-5 font-bold'>Welcome {isLoginPage && 'Back'}</div>
-        <div className='text-lg font-bold mb-8'>{isLoginPage ? 'Login now to get explored' : 'Register now to get started'}</div>
+        <div className='text-3xl mt-2 font-bold'>Welcome {isLoginPage && 'Back'}</div>
+        <div className='text-lg font-bold mb-4'>{isLoginPage ? 'Login now to get explored' : 'Register now to get started'}</div>
         {!verificationStep ? (
           <form onSubmit={!isLoginPage ? handleRegister : handleLogin} className='flex flex-col'>
               <>
@@ -375,11 +375,21 @@ const Auth = () => {
                     className="mb-2 p-2 rounded-lg bg-white mx-4"
                  />
                 )}
-                <button type="submit" className='mb-2 mx-4 bg-yellow-400 text-slate-900 rounded-lg shadow-lg py-2 
+                <button type="submit" className='mb-2 mx-4 bg-yellow-400 text-slate-900 rounded-lg shadow-lg py-2 hover:bg-yellow-500 
                 text-2xl font-bold'>
                  {!isLoginPage ? 'Register now' : 'Login'}
                 </button>
-                <div className='text-blue-800 cursor-pointer text-left ml-5 mb-4' onClick={handleOpenForgotPassword} >Forgot password?</div>
+                <div className='text-blue-800 cursor-pointer text-left ml-5 mb-2' onClick={handleOpenForgotPassword} >Forgot password?</div>
+                <button
+                  type="button"
+                  className='bg-red-600 font-bold mb-4 rounded-lg cursor-pointer text-white text-2xl hover:bg-red-700 mx-4 py-2'
+                 onClick={() => {
+                    setEmail("lovely1211zmn@gmail.com");
+                    setPassword("12345678");
+                  }}
+                >
+                  Continue as Guest
+                </button>
               </>
           </form>
         ) : (
@@ -398,6 +408,7 @@ const Auth = () => {
               </button>
             </form>
         )}
+
         {isForgotPasswordOpen && <ForgotPassword onClose={handleCloseForgotPassword} />}
         {message && <p className={`text-${messageType === 'success' ? 'green' : 'red'}-600 mb-2`}>{message}</p>}
         <div>
