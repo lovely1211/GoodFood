@@ -78,8 +78,10 @@ router.put('/reset-password', async (req, res) => {
 
 // Email Verification Route
 router.post('/verify-email', verifyEmail);
+
 router.post('/register', upload.single('profilePicture'), registerUser);
 router.post('/login', loginUser);
 router.put('/:id', updateUser);
+
 
 module.exports = router;
