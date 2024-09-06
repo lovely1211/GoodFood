@@ -34,7 +34,8 @@ connectDB();
 // Middleware
 app.use(bodyParser.json());
 app.use(cors({
-  origin: 'http://localhost:3000', 
+  // origin: 'http://localhost:3000', 
+  origin: 'https://goodfood-28z5.onrender.com',
   methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
   credentials: true
 }));
