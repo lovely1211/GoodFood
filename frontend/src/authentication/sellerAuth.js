@@ -255,7 +255,19 @@ const Auth = () => {
           <button type="submit" className='mb-2 mx-4 bg-yellow-400 text-slate-900 rounded-lg shadow-lg py-2 text-2xl font-bold' disabled={loading}>
             {loading ? "Loading..." : (isLoginPage ? 'Login' : 'Register now')}
           </button>
-          <div className='text-blue-800 cursor-pointer text-left ml-5 mb-4' onClick={handleOpenForgotPassword}>Forgot password?</div>
+          <div className='text-blue-800 cursor-pointer text-left ml-5 mb-2' onClick={handleOpenForgotPassword}>Forgot password?</div>
+          {isLoginPage && (
+          <button
+            type="button"
+            className='bg-red-600 font-bold mb-4 rounded-lg cursor-pointer text-white text-2xl hover:bg-red-700 mx-4 py-2'
+           onClick={() => {
+              setEmail("email@gmail.com");
+              setPassword("098765");
+            }}
+          >
+            Continue as Guest
+          </button>
+          )}
         </form>
         {isForgotPasswordOpen && <ForgotPassword onClose={handleCloseForgotPassword} />}
         {message && <p className={`text-${messageType === 'success' ? 'green' : 'red'}-600 mb-2`}>{message}</p>}
