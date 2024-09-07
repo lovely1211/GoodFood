@@ -1,5 +1,3 @@
-// server.js
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -18,31 +16,36 @@ const sellerStatusRoutes = require('./routes/sellerStatus');
 
 require('dotenv').config();
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
+// Session middleware
 app.use(session({
   secret: process.env.JWT_SECRET_KEY,  
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } 
+  cookie: { secure: false } // Ensure this is set correctly for production
 }));
-
 
 // Connect to MongoDB
 connectDB();
 
 // Middleware
 app.use(bodyParser.json());
+
+// CORS configuration
 app.use(cors({
-  // origin: 'http://localhost:3000', 
-  origin: 'https://goodfood-28z5.onrender.com',
+  origin: 'https://goodfood-28z5.onrender.com',  // Your frontend URL
   methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
-  credentials: true
+  credentials: true // Allow credentials like cookies and sessions
 }));
+
+// Handle preflight requests for all routes
+app.options('*', cors());
+
+// Serve static files (for images, etc.)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
-// Routes
+// API Routes
 app.use('/api/service', serviceRoutes);
 app.use('/api/buyerAuth', buyerRoutes);
 app.use('/api/sellerAuth', sellerRoutes);
@@ -55,4 +58,5 @@ app.use('/api/seller/status', sellerStatusRoutes);
 // Error handling middleware
 app.use(errorHandler);
 
+// Start server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
