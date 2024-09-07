@@ -23,7 +23,7 @@ const Profile = ({ onClose }) => {
     return <div>Loading...</div>; 
   }
 
-  const profilePictureUrl = user.profilePicture ? `http://localhost:5000/${user.profilePicture}` : defaultProfilePicture;
+  const profilePictureUrl = user.profilePicture ? `https://your-backend-url.onrender.com/${user.profilePicture}` : defaultProfilePicture;
 
   return (
     <>

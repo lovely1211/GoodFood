@@ -46,7 +46,6 @@ const MenuItemManager = () => {
       console.error('User is not authenticated or user ID is missing');
     }
   }, [fetchMenuItems, user]);
-  
 
   const handleImageChange = (e) => {
     setItemImage(e.target.files[0]);
