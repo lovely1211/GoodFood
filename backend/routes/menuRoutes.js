@@ -44,6 +44,7 @@ router.get('/', async (req, res) => {
   try {
     const menuItems = await MenuItem.find().populate('sellerId', 'name');;
     res.json(menuItems);
+    res.json({ message: 'Menu route works' });
   } catch (e) {
     console.error('Error fetching menu items:', e);
     res.status(500).json({ error: 'Error fetching menu items' });

@@ -34,7 +34,8 @@ app.use(bodyParser.json());
 
 // CORS configuration
 app.use(cors({
-  origin: 'https://goodfood-28z5.onrender.com',  // Your frontend URL
+  // origin: 'https://goodfood-28z5.onrender.com',
+  origin: 'https://localhost:3000',
   methods: 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
   credentials: true // Allow credentials like cookies and sessions
 }));
