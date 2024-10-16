@@ -17,9 +17,13 @@ exports.verifyEmail = async (req, res) => {
   
       res.send('Email verified successfully.');
     } catch (err) {
-      res.status(400).send('Invalid or expired token.');
+      if (err.name === 'TokenExpiredError') {
+        res.status(400).send('Token has expired.');
+      } else {
+        res.status(400).send('Invalid token.');
+      }
     }
-};  
+}
 
 exports.registerUser = async (req, res) => {
     try {
@@ -56,6 +60,8 @@ exports.registerUser = async (req, res) => {
             token,
         });
 
+        res.status(201).json({ message: 'User registered successfully. Please verify your email.', user: newUser });
+
     } catch (error) {
         console.error('Error during registration:', error);
         res.status(500).json({ message: 'Server error' });
@@ -82,6 +88,7 @@ exports.loginUser = async (req, res) => {
                 profilePicture: user.profilePicture
             }
         });
+
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }

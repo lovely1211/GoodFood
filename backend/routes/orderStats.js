@@ -11,8 +11,13 @@ router.get('/orderStats', async (req, res) => {
       return res.status(400).json({ message: 'Seller ID is required' });
     }
 
+    // Validate sellerId
+    if (!mongoose.Types.ObjectId.isValid(sellerId)) {
+      return res.status(400).json({ message: 'Invalid Seller ID format' });
+    }
+
     // Convert sellerId to ObjectId
-    const objectId = new mongoose.mongo.ObjectId(sellerId);
+    const objectId = mongoose.Types.ObjectId(sellerId);
 
     // Total Orders
     const totalOrders = await Order.countDocuments({
@@ -49,6 +54,5 @@ router.get('/orderStats', async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
-
 
 module.exports = router;

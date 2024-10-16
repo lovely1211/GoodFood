@@ -25,8 +25,12 @@ const authMiddleware = async (req, res, next) => {
       // Proceed to the next middleware or route handler
       next();
     } catch (error) {
-      console.error('Error in authMiddleware:', error.message);
-      return res.status(401).json({ message: 'Not authorized, token failed' });
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: 'Token expired' });
+      } else if (error.name === 'JsonWebTokenError') {
+        return res.status(401).json({ message: 'Invalid token' });
+      }
+      return res.status(401).json({ message: 'Authorization failed' });
     }
   } else {
     console.log('No authorization header provided');
