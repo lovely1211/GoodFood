@@ -13,9 +13,7 @@ import LikedItems from '../pages/buyer/LikedItem';
 import SellerMenu from '../pages/seller/MenuManagement';
 import ProtectedRoute from './protectedRoute'; 
 import BuyerResetPassword from '../authentication/buyerReset';
-import SellerResetPassword from '../authentication/buyerReset';
- 
-
+import SellerResetPassword from '../authentication/sellerReset';
 
 const CombinedRoutes = () => {
   const [userRole, setUserRole] = useState(localStorage.getItem('role'));
@@ -43,7 +41,6 @@ const CombinedRoutes = () => {
           </>
         ) : userRole === 'seller' ? (
           <>
-            {/* Routes for sellers */}
             <Route path="/" element={<ProtectedRoute><SellerDashboard /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><SellerOrder /></ProtectedRoute>} />
             <Route path="/about" element={<ProtectedRoute><SellerAbout /></ProtectedRoute>} />
@@ -52,11 +49,9 @@ const CombinedRoutes = () => {
             <Route path="/reset-password" element={<SellerResetPassword />} />
           </>
         ) : (
-          // Redirect unauthenticated users or users with an undefined role
           <Route path="*" element={<Navigate to="/auth" replace />} />
         )}
 
-        {/* Catch-all route */}
         <Route path="*" element={<Navigate to="/" replace />} /> 
       </Routes>
     </Router>

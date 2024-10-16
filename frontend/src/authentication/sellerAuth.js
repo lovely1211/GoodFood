@@ -43,7 +43,7 @@ const Auth = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('userInfo');
-    
+  
     const checkToken = async () => {
       if (token && storedUser) {
         try {
@@ -52,22 +52,24 @@ const Auth = () => {
               Authorization: `Bearer ${token}`,
             },
           };
-          
-          const { data } = await axiosInstance.get('/sellerAuth/profile', config,  {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setUser(data.user);
-          navigate('/');
+  
+          const { data } = await axiosInstance.get('/sellerAuth/profile', config);
+          setUser(data.user); 
+          // Don't redirect to /auth again if token is valid
         } catch (error) {
           console.error('Token verification error:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('userInfo');
+          navigate('/auth');
         }
-      } 
+      } else {
+        navigate('/auth');
+      }
     };
-    
+  
     checkToken();
-  }, [navigate, setUser]);  
+  }, [navigate, setUser]);
+  
   
   const displayMessage = (msg, type) => {
     setMessage(msg);
@@ -95,6 +97,10 @@ const Auth = () => {
       setLoading(false);
       return;
     }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      return displayMessage("Invalid email address", 'warning');
+    }
+
     try {
       const formData = new FormData();
       formData.append('name', name);
@@ -110,13 +116,15 @@ const Auth = () => {
 
       const { data } = await axiosInstance.post("/sellerAuth/register", formData, config);
 
-      alert("Registration successful");
+      // alert("Registration successful");
       
       localStorage.setItem("userInfo", JSON.stringify(data.user)); 
-      setLoading(false);
+      // setLoading(false);
       navigate("/");
     } catch (error) {
       displayMessage(error.response?.data?.message || error.message, 'error');
+      // setLoading(false);
+    }finally {
       setLoading(false);
     }
   };
@@ -134,33 +142,35 @@ const Auth = () => {
     try {
       const config = {
         headers: {
-          "Content-Type": "application/json",
+            "Content-Type": "application/json",
         },
       };
 
-      const normalizedEmail = email.toLowerCase(); 
-
-      const { data } = await axiosInstance.post("/sellerAuth/login", { email: normalizedEmail, password }, config);
-
-      alert("Login successful!");
+      const { data } = await axiosInstance.post("/sellerAuth/login", {
+        email: email.toLowerCase(),
+        password,
+      }, config);
       const userInfo = {
          ...data.user,
           role: 'seller',
       }; 
       
-      setUser(userInfo);
       localStorage.setItem("userInfo", JSON.stringify(userInfo)); 
       localStorage.setItem("token", data.token); 
+      
+      setUser(userInfo);
+      alert("Login successful")
+
       // After successful login
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('role', 'seller');
-
       setLoading(false);
       navigate("/");
       
     } catch (error) {
       console.error('Login error:', error.response?.data?.message || error.message);
       displayMessage(error.response?.data?.message || error.message, 'error');
+    } finally {
       setLoading(false);
     }
   };
