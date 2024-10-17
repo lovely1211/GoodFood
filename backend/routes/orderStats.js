@@ -17,7 +17,7 @@ router.get('/orderStats', async (req, res) => {
     }
 
     // Convert sellerId to ObjectId
-    const objectId = mongoose.Types.ObjectId(sellerId);
+    const objectId = new mongoose.Types.ObjectId(sellerId);
 
     // Total Orders
     const totalOrders = await Order.countDocuments({

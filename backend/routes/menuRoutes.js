@@ -34,6 +34,7 @@ router.post('/', authMiddleware, upload.single('image'), async (req, res) => {
     await menuItem.save();
     res.status(201).json(menuItem);
   } catch (e) {
+    alert("Please fill all fields")
     console.error('Error adding menu item:', e);
     res.status(400).json({ error: 'Error adding menu item' });
   }
